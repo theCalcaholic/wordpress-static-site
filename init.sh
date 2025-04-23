@@ -10,22 +10,23 @@ MATOMO_DOMAIN="${MATOMO_DOMAIN:-"matomo.${DOMAIN}"}"
 read -r -p "Enter your comentario domain (keep empty for default 'comentario.${DOMAIN}'): " COMMENTS_DOMAIN
 COMMENTS_DOMAIN="${COMMENTS_DOMAIN:-"comments.${DOMAIN}"}"
 
+CADDYFILE="Caddyfile"
+ADMIN_EMAIL=""
 while true
 do
   read -r -N 1 -p "Do you want to use self signed certificates (e.g. for local testing or with dummy domains)? (y/N) " local_setup
+  echo ''
   local_setup="${local_setup,,}"
   if [[ "${local_setup}" == y ]]
   then
-   TLS_CONFIG_OVERRIDE="  tls internal {
-    on_demand
-  }"
-   break
- elif [[ "${local_setup}" == n ]]
- then
-   TLS_CONFIG_OVERRIDE=""
-   break
- fi
- echo "Invalid choice! Please enter y (yes) or n (no)."
+    CADDYFILE="Caddyfile-local"
+    break
+  elif [[ "${local_setup}" == n ]]
+  then
+    read -r -p "Enter an email address to be used for letsencrypt certificates: " ADMIN_EMAIL
+    break
+  fi
+  echo "Invalid choice! Please enter y (yes) or n (no)."
 done
 
 read -r -p "Enter a username for basic authentication: " BASIC_AUTH_USER
@@ -56,6 +57,7 @@ DOMAIN="${DOMAIN?}"
 ADMIN_DOMAIN="${ADMIN_DOMAIN?}"
 MATOMO_DOMAIN="${MATOMO_DOMAIN?}"
 COMMENTS_DOMAIN="${COMMENTS_DOMAIN?}"
+ADMIN_EMAIL="${ADMIN_EMAIL}"
 
 DB_ROOT_PASSWORD="$(base64 < /dev/urandom | head -c 32)"
 WORDPRESS_DB_PASSWORD="$(base64 < /dev/urandom | head -c 32)"
@@ -65,7 +67,7 @@ POSTGRES_PASSWORD="${POSTGRES_PASSWORD?}"
 BASIC_AUTH_USER="${BASIC_AUTH_USER?}"
 BASIC_AUTH_PW_HASH="${BASIC_AUTH_PW_HASH?}"
 
-TLS_CONFIG_OVERRIDE="${TLS_CONFIG_OVERRIDE}"
+CADDYFILE="${CADDYFILE}"
 EOF
 
 mkdir -p ./comentario
@@ -85,3 +87,27 @@ CREATE USER 'matomo' IDENTIFIED BY '${MATOMO_DB_PASSWORD}';
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX, DROP, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON matomo.* TO 'matomo';
 GRANT FILE ON *.* TO 'matomo';
 EOF
+
+if [[ "$local_setup" == "y" ]]
+then
+  while true
+  do
+    read -r -N 1 -p "Do you want to add the domains to /etc/hosts for local testing (requires root permissions)? (y/N) " choice
+    echo ''
+    local_setup="${local_setup,,}"
+    if [[ "${choice}" == y ]]
+    then
+      for domain in "$DOMAIN" "$ADMIN_DOMAIN" "$COMMENTS_DOMAIN" "$MATOMO_DOMAIN"
+      do
+        grep "$domain" /etc/hosts > /dev/null || echo "127.0.0.1 $domain" | sudo tee -a /etc/hosts
+      done
+      break
+    elif [[ "$choice" == n ]]
+    then
+      break
+    fi
+
+  done
+  echo "Invalid choice! Please enter y (yes) or n (no)."
+fi
+

@@ -4,7 +4,7 @@ services:
     volumes:
       - caddy_data:/data:Z
       - caddy_config:/config:Z
-      - "./Caddyfile:/etc/caddy/Caddyfile:z,ro"
+      - "./${CADDYFILE}:/etc/caddy/Caddyfile:z,ro"
       - wp_static:/www/wp-static:z,ro
     ports:
       - "80:80"
@@ -13,6 +13,14 @@ services:
     cap_add:
       - NET_ADMIN
     restart: always
+    environment:
+      DOMAIN: "${DOMAIN}"
+      ADMIN_DOMAIN: "${ADMIN_DOMAIN}"
+      MATOMO_DOMAIN: "${MATOMO_DOMAIN}"
+      COMMENTS_DOMAIN: "${COMMENTS_DOMAIN}"
+      BASIC_AUTH_USER: "${BASIC_AUTH_USER}"
+      BASIC_AUTH_PW_HASH: "${BASIC_AUTH_PW_HASH}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL}"
 
     logging:
       driver: journald
