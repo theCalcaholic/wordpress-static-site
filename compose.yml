@@ -1,0 +1,125 @@
+services:
+  caddy:
+    image: docker.io/library/caddy:2
+    volumes:
+      - caddy_data:/data:Z
+      - caddy_config:/config:Z
+      - "./Caddyfile:/etc/caddy/Caddyfile:z,ro"
+      - wp_static:/www/wp-static:z,ro
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    cap_add:
+      - NET_ADMIN
+    restart: always
+
+    logging:
+      driver: journald
+      options:
+        tag: static-wordpress
+
+# WORDPRESS
+  wordpress-db:
+    image: docker.io/library/mariadb:10
+    environment:
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: "${WORDPRESS_DB_PASSWORD}"
+      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MARIADB_DATABASE: "wordpress"
+      MARIADB_MATOMO_USER: matomo
+      MARIADB_MATOMO_PASSWORD: "${MATOMO_DB_PASSWORD}"
+      MARIADB_MATOMO_DB: matomo
+      MARIADB_AUTO_UPGRADE: 1
+    volumes:
+      - wordpress_db:/var/lib/mysql:Z
+      - ./wordpress-db/init.d:/docker-entrypoint-initdb.d/
+    restart: always
+    logging:
+      driver: journald
+      options:
+        tag: static-wordpress
+
+  wordpress:
+    depends_on:
+      - wordpress-db
+    image: docker.io/library/wordpress:6.7.2-php8.3
+    environment:
+      WORDPRESS_DB_HOST: wordpress-db
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: "${WORDPRESS_DB_PASSWORD}"
+      WORDPRESS_DB_NAME: wordpress
+      STAATIC_SITE_URL: "http://${ADMIN_DOMAIN}/"
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'WP_HOME', 'https://${ADMIN_DOMAIN}' );
+    volumes:
+      - wordpress:/var/www/html:Z
+      - wp_static:/staatic-out:z
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:z,ro
+    restart: always
+    extra_hosts:
+      - "${ADMIN_DOMAIN}:127.0.0.1"
+    logging:
+      driver: journald
+      options:
+        tag: static-wordpress
+
+# COMMENTS
+  comments:
+    depends_on:
+      - comments-db
+    image: registry.gitlab.com/comentario/comentario:latest
+    environment:
+      BASE_URL: "https://${COMMENTS_DOMAIN}/"
+      SECRETS_FILE: "/secrets.yaml"
+    volumes:
+      - ./comentario/secrets.yaml:/secrets.yaml:z,ro
+    restart: always
+    logging:
+      driver: journald
+      options:
+        tag: static-wordpress
+  
+  comments-db:
+    image: docker.io/postgres:17-alpine
+    shm_size: 128mb
+    environment:
+      POSTGRES_DB: comentario
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - comments_db:/var/lib/postgresql/data:Z
+    restart: always
+    logging:
+      driver: journald
+      options:
+        tag: static-wordpress
+
+# ANALYTICS
+  matomo:
+    depends_on:
+      - wordpress-db
+    image: docker.io/matomo:latest
+    restart: always
+    links:
+      - wordpress-db:db
+    volumes:
+      - matomo:/var/www/html:z
+    environment:
+      MATOMO_DATABASE_HOST: db
+      PHP_MEMORY_LIMIT: 2048M
+      MATOMO_DATABASE_ADAPTER: mysql
+      MATOMO_DATABASE_USERNAME: matomo
+      MATOMO_DATABASE_PASSWORD: "${MATOMO_DB_PASSWORD}"
+      MATOMO_DATABASE_DBNAME: matomo
+
+
+volumes:
+  wordpress_db:
+  wordpress:
+  comments_db:
+  caddy_data:
+  caddy_config:
+  wp_static:
+  matomo:
