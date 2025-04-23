@@ -1,0 +1,70 @@
+{
+  vars {
+    tls_config {env.TLS_CONFIG_OVERRIDE} base ""
+    base_domain {env.DOMAIN}
+    matomo_domain {env.MATOMO_DOMAIN} base "matomo.{vars.domain}"
+    comments_domain {env.COMMENTS_DOMAIN} base "comments.{vars.domain}"
+    admin_domain {env.ADMIN_DOMAIN} base "admin.{vars.domain}"
+  }
+  email {env.OWNER_EMAIL} # CHANGEME
+}
+
+{env.DOMAIN}:443 {
+  bind 0.0.0.0
+
+  # for local testing:
+  {vars.tls_config}
+
+  route /blog/* {
+    uri strip_prefix /blog
+    redir https://{env.DOMAIN}{uri} permanent
+  }
+
+  file_server {
+    root /www/wp-static
+    index index.html index.htm
+  }
+}
+
+{vars.matomo_domain}:443 {
+  bind 0.0.0.0
+
+
+  @auth {
+    not {
+      path /
+      path /matomo.php
+      path /matomo.js
+    }
+  }
+
+  reverse_proxy matomo:80
+
+  basic_auth @auth {
+    {env.BASIC_AUTH_USER} {env.BASIC_AUTH_PW_HASH}
+  }
+}
+
+{vars.comments_domain}:443 {
+  @auth {
+    path /*/auth/*
+  }
+
+  bind 0.0.0.0
+  {vars.tls_config}
+
+  reverse_proxy /* comments:80
+}
+
+{vars.admin_comain}:443 {
+  bind 0.0.0.0
+  {vars.tls_config}
+
+  reverse_proxy wordpress:80
+
+  basic_auth {
+    {env.BASIC_AUTH_USER} {env.BASIC_AUTH_PW_HASH}
+  }
+
+
+}
