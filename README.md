@@ -1,5 +1,7 @@
 # Static Wordpress
 
+[-> Installation Instructions](INSTALL.md)
+
 ## Motivation
 
 My mum has had blog based on Wordpress for well over 10 years.
