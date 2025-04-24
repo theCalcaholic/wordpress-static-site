@@ -100,3 +100,12 @@ Now go to the Staatic -> Settings and change the following settings:
 Finally, go to Staatic -> Publications and hit "Publish now". This will trigger a publish process and once that is complete, you should find your static wordpress site at https://<your-base-domain>.
 
 [staatic]: https://wordpress.org/plugins/staatic/
+
+
+### 6. Connect Comentario
+
+TBD
+
+### 7. Connect Matomo
+
+TBD
