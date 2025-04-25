@@ -48,9 +48,16 @@ then
 fi
 
 BASIC_AUTH_PW_HASH="$("${CONTAINER_CLI}" run --rm docker.io/library/caddy:2 caddy hash-password --plaintext "${BASIC_AUTH_PW}")"
+BASIC_AUTH_PW_HASH="${BASIC_AUTH_PW_HASH//\$/\$\$}"
 
-POSTGRES_PASSWORD="$(base64 < /dev/urandom | head -c 32)"
-MATOMO_DB_PASSWORD="$(base64 < /dev/urandom | head -c 32)"
+POSTGRES_PASSWORD="$(base64 < /dev/urandom | tr -d '/' | head -c 32)"
+MATOMO_DB_PASSWORD="$(base64 < /dev/urandom | tr -d '/' | head -c 32)"
+
+# CLEANUP
+
+"$CONTAINER_CLI" run --rm -v .:/config alpine sh -c 'rm -rf /config/.env /config/comentario /config/wordpress-db'
+
+# INSTALL CONFIG FILES
 
 cat <<EOF > .env
 DOMAIN="${DOMAIN?}"
@@ -59,8 +66,8 @@ MATOMO_DOMAIN="${MATOMO_DOMAIN?}"
 COMMENTS_DOMAIN="${COMMENTS_DOMAIN?}"
 ADMIN_EMAIL="${ADMIN_EMAIL}"
 
-DB_ROOT_PASSWORD="$(base64 < /dev/urandom | head -c 32)"
-WORDPRESS_DB_PASSWORD="$(base64 < /dev/urandom | head -c 32)"
+DB_ROOT_PASSWORD="$(base64 < /dev/urandom | tr -d '/' | head -c 32)"
+WORDPRESS_DB_PASSWORD="$(base64 < /dev/urandom | tr -d '/' | head -c 32)"
 MATOMO_DB_PASSWORD="${MATOMO_DB_PASSWORD}"
 POSTGRES_PASSWORD="${POSTGRES_PASSWORD?}"
 
@@ -69,6 +76,7 @@ BASIC_AUTH_PW_HASH="${BASIC_AUTH_PW_HASH?}"
 
 CADDYFILE="${CADDYFILE}"
 EOF
+chmod 0700 ./.env
 
 mkdir -p ./comentario
 cat <<EOF > ./comentario/secrets.yaml
@@ -79,6 +87,7 @@ postgres:
   username: postgres
   password: "${POSTGRES_PASSWORD?}"
 EOF
+chmod 0700 ./comentario/secrets.yaml
 
 mkdir -p wordpress-db/init.d
 cat <<EOF > wordpress-db/init.d/matomo.sql
@@ -87,6 +96,7 @@ CREATE USER 'matomo' IDENTIFIED BY '${MATOMO_DB_PASSWORD}';
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX, DROP, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON matomo.* TO 'matomo';
 GRANT FILE ON *.* TO 'matomo';
 EOF
+chmod 0700 ./wordpress-db/init.d/matomo.sql
 
 if [[ "$local_setup" == "y" ]]
 then
@@ -107,7 +117,9 @@ then
       break
     fi
 
+    echo "Invalid choice! Please enter y (yes) or n (no)."
   done
-  echo "Invalid choice! Please enter y (yes) or n (no)."
 fi
+
+"$CONTAINER_CLI" run --rm -v ./wordpress-db/init.d/:/wp-init.d/ alpine:latest sh -c 'chown 999 /wp-init.d/*'
 
