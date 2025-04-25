@@ -18,7 +18,7 @@ The core of the setup is a docker/podman compose file with the following service
 ```mermaid
 flowchart LR;
   entry("my.blog admin.my.blog comments.my.blog matomo.my.blog") --> A["Caddy [1]"];
-  A -->|readonly| E["static site volume [5]"]
+  A -->|readonly| E("static site volume [5]")
   A -->|Basic Auth| B["Wordpress [2]"];
   B -->|read-write| E
   B--> G["MariaDB"]
