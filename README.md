@@ -4,7 +4,7 @@
 
 ## Motivation
 
-My mum has had blog based on Wordpress for well over 10 years.
+My mother has had blog based on Wordpress for well over 10 years.
 Now, wordpress is notoriously plagued by security issues and it is very important to keep your instance always up-to-date,
 which means persistent maintenance efforts for hosting that blog. And who's responsible for patching wordpress and its plugins? Me, of course. :)
 
