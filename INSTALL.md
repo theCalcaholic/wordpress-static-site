@@ -104,8 +104,104 @@ Finally, go to Staatic -> Publications and hit "Publish now". This will trigger 
 
 ### 6. Connect Comentario
 
-TBD
+Open Comentario at https://comments.<your-domain\> (https://\<your-comments-domain\>) and login. Now go to Domains and select the domain of your blog (create it if it does not exist yet).
+There you will find an HTML snippet, that you can customize and copy. Store this snippet for later.
+
+*Note: Following, you will insert the comments HTML snippet directly into the source code of your theme. There may be better ways to do this, e.g. if your theme has special functionality for inserting HTML on each page/post or with another plugin. Suggestions welcome!*
+
+Now go to wordpress (https://admin.<your-domain\> or https://\<your-admin-domain\>) and login. Got to Tools -> Theme File Editor. Find the files that are responsible for rendering single pages and posts (in the case of the default twenty wenty-five theme, for example, those are templates/single.html and template/page.html. Insert the HTML snippet copied from Comentario there.
+
+Alternatively, check if your theme uses a pattern for comments. For example in the case of the twenty twenty-five theme, this looks like this (inside templates/single.html):
+
+```html
+<!-- wp:pattern {"slug":"twentytwentyfive/comments"} /-->
+```
+If you theme uses a pattern, it's probably a better idea to insert the HTML snippet in the respective pattern - you will find it under patterns/\<pattern-name\> in the theme file editor. For example, I would change the pattern like this (with my blog domain being https://my.blog and the twenty twenty-five theme):
+
+<details>
+  <summary>patterns/comments.php</summary>
+  
+```diff
+<?php
+/**
+ * Title: Comments
+ * Slug: twentytwentyfive/comments
+ * Description: Comments area with comments list, pagination, and comment form.
+ * Categories: text
+ * Block Types: core/comments
+ *
+ * @package WordPress
+ * @subpackage Twenty_Twenty_Five
+ * @since Twenty Twenty-Five 1.0
+ */
+
+?>
+<!-- wp:comments {"className":"wp-block-comments-query-loop","style":{"spacing":{"margin":{"top":"var:preset|spacing|70","bottom":"var:preset|spacing|70"}}}} -->
+<div class="wp-block-comments wp-block-comments-query-loop" style="margin-top:var(--wp--preset--spacing--70);margin-bottom:var(--wp--preset--spacing--70)">
+	<!-- wp:heading {"fontSize":"x-large"} -->
+	<h2 class="wp-block-heading has-x-large-font-size"><?php esc_html_e( 'Comments', 'twentytwentyfive' ); ?></h2>
+	<!-- /wp:heading -->
+- 	<!-- wp:comments-title {"level":3,"fontSize":"large"} /-->
+- 	<!-- wp:comment-template -->
+- 	<!-- wp:group {"style":{"spacing":{"margin":{"top":"0","bottom":"var:preset|spacing|50"}}}} -->
+- 	<div class="wp-block-group" style="margin-top:0;margin-bottom:var(--wp--preset--spacing--50)">
+- 		<!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"top"}} -->
+- 		<div class="wp-block-group">
+- 			<!-- wp:avatar {"size":50} /-->
+- 			<!-- wp:group -->
+- 			<div class="wp-block-group">
+- 				<!-- wp:comment-date /-->
+- 				<!-- wp:comment-author-name /-->
+- 				<!-- wp:comment-content /-->
+- 				<!-- wp:group {"layout":{"type":"flex","flexWrap":"nowrap"}} -->
+- 				<div class="wp-block-group">
+- 					<!-- wp:comment-edit-link /-->
+- 					<!-- wp:comment-reply-link /-->
+- 				</div>
+- 				<!-- /wp:group -->
+- 			</div>
+- 			<!-- /wp:group -->
+- 		</div>
+- 		<!-- /wp:group -->
+- 	</div>
+- 	<!-- /wp:group -->
+- 	<!-- /wp:comment-template -->
+- 
+- 	<!-- wp:comments-pagination {"layout":{"type":"flex","justifyContent":"space-between"}} -->
+- 	<!-- wp:comments-pagination-previous /-->
+- 	<!-- wp:comments-pagination-next /-->
+- 	<!-- /wp:comments-pagination -->
+- 
+- 	<!-- wp:post-comments-form /-->
++   <script defer src="https://comments.my.blog/comentario.js"></script>
++   <comentario-comments theme="light"></comentario-comments>
+</div>
+<!-- /wp:comments -->
+```
+</details>
+
+Afterwards, publish your site again with Staatic (see [section 5: setup Wordpress](#5-setup-wordpress)) and you should see Comentario comments under your posts and pages.
+![image](https://github.com/user-attachments/assets/833de6ad-40a6-4b9f-a9c1-094c79a95fec)
+
 
 ### 7. Connect Matomo
 
-TBD
+*Note: This part only works reliable if your domains are publicly reachable. If you are testing things locally, Matomo might fail to connect.*
+
+First of all open matomo at https://matomo.<your-domain\> (https://\<your-matomo-domain\> respectively), login and go to Administration (the cog wheel at the top right) -> Personal -> Security. On this page, scroll down to the "Auth Tokens" section and click on "Create new Token".
+![image](https://github.com/user-attachments/assets/c30077de-2ea8-475b-bcea-7e4c70b0c942)
+After creating the token, copy it and store it for later.
+
+Now head over to Wordpress (https://admin.<your-domain\> or https://\<your-admin-domain\>) and login.
+Install and activate the Wordpress plugin [Connect Matomo (wp-piwik)](https://wordpress.org/plugins/wp-piwik/). Then go to Settings -> Connect Matomo and configure it as follows:
+
+Matomo Mode: `Self-hosted (HTTP API, default)`
+Matomo URL: `https://matomo.<your-domain>` (or `https://<your-matomo-domain>`)
+Auth token: enter the auth token copied in Matomo previously
+Auto config: checked
+
+![image](https://github.com/user-attachments/assets/c6a2ef41-d719-467b-8d14-45088ec7325d)
+
+No go to the "Enable Tracking" tab and configure Matomo to your liking.
+
+Again, don't forget to regenerate your page with Staatic to see your changes in the live site.
