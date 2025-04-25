@@ -38,7 +38,7 @@ Run:
 
 *NOTE: If using locally signed certificates. those won't be trusted by Firefox atm. Please use another browser*
 
-Navigate to https://matomo.<your-domain> or https://<your-matomo-domain> (depending on your choices in the init script) and complete the installation and initial user creation. You will have to login with your basic auth credentials before getting access to the site.
+Navigate to https://matomo.<your-domain\> or https://\<your-matomo-domain\> (depending on your choices in the init script) and complete the installation and initial user creation. You will have to login with your basic auth credentials before getting access to the site.
 Use the prefilled values in the database configuration step.
 ![image](https://github.com/user-attachments/assets/b7085023-cf95-4fa3-b508-903f6b206111)
 
@@ -49,7 +49,7 @@ In the step "Set up a Website", use the base domain of your site (i.e. without a
 
 *NOTE: If using locally signed certificates. those won't be trusted by Firefox atm. Please use another browser*
 
-Navigate to https://comments.<your-domain> or https://<your-comments-domain> (depending on your choices in the init script), sign up and then login with a new user.
+Navigate to https://comments.<your-domain\> or https://\<your-comments-domain\> (depending on your choices in the init script), sign up and then login with a new user.
 Now head over to "Domains" and create a new domain using the base domain of your site, e.g.:
 ![image](https://github.com/user-attachments/assets/9341f557-a3c1-4d84-8570-b80801dfa009)
 
@@ -78,10 +78,10 @@ docker compose exec wordpress chown www-data: /staatic-out
 ```
 </details>
 
-Navigate to https://admin.<your-domain> or https://<your-admin-domain> (depending on your choices in the init script) and complete the Wordpress installation and initial user creation. You will have to login with your basic auth credentials before getting access to the site.
+Navigate to https://admin.<your-domain\> or https://\<your-admin-domain\> (depending on your choices in the init script) and complete the Wordpress installation and initial user creation. You will have to login with your basic auth credentials before getting access to the site.
 Then login to wordpress.
 
-From now on, you will be able to login to wordpress at https://admin.<your-domain>/wp-login.php (https://<your-admin-domain>/wp-login.php respectively).
+From now on, you will be able to login to wordpress at https://admin.<your-domain\>/wp-login.php (https://\<your-admin-domain\>/wp-login.php respectively).
 
 #### Setup Wordpress static site generation
 
@@ -97,7 +97,7 @@ Now go to the Staatic -> Settings and change the following settings:
 - In the *Advanced* tab, check the box at *Downgrade HTTPS to HTTP while crawling site*.
   ![image](https://github.com/user-attachments/assets/95162bbe-a6b1-410c-80ae-a4aab0bddfa1)
 
-Finally, go to Staatic -> Publications and hit "Publish now". This will trigger a publish process and once that is complete, you should find your static wordpress site at https://<your-base-domain>.
+Finally, go to Staatic -> Publications and hit "Publish now". This will trigger a publish process and once that is complete, you should find your static wordpress site at https://\<your-base-domain\>.
 
 [staatic]: https://wordpress.org/plugins/staatic/
 
