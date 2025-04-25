@@ -1,3 +1,11 @@
+# Prerequisites
+
+This installation guide works and is tested on Linux. It might also work on Mac and partially on Windows (with a bash compatible shell installed, e.g. WSL or MingW64), but I haven't tested that. If it's not fully working out of the box, the guide can probably still serve as an orientation to setting things up manually on those operating systems, though.
+
+You will need to have installed either podman or docker on your system and your user needs to be allowed to use either container engine in rootfull mode.
+
+If you want to setup your site publicly with letsencrypt certificates, you will need 4 separate domains (or subdomains) pointing to your servers IP address: one for your live site, one for the comments system, one for the analytics platform and one for the admin section (wordpress).
+
 # Installation
 
 ### 1. Clone this repository and run the interactive init script
